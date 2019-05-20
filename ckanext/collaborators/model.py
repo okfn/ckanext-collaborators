@@ -3,8 +3,9 @@
 import datetime
 import uuid
 import logging
+from collections import OrderedDict
 
-from sqlalchemy import Column, Unicode, DateTime
+from sqlalchemy import orm, Column, Unicode, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 from ckan.model.meta import metadata
@@ -28,6 +29,17 @@ class DatasetMember(Base):
     capacity = Column(Unicode, nullable=False)
     modified = Column(DateTime, default=datetime.datetime.utcnow)
 
+    def as_dict(self):
+        _dict = OrderedDict()
+        table = orm.class_mapper(self.__class__).mapped_table
+        for col in table.c:
+            val = getattr(self, col.name)
+            if isinstance(val, datetime.date):
+                val = str(val)
+            if isinstance(val, datetime.datetime):
+                val = val.isoformat()
+            _dict[col.name] = val
+        return _dict
 
 def create_tables():
     DatasetMember.__table__.create()
