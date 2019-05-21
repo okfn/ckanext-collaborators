@@ -76,3 +76,39 @@ class TestCollaboratorsAuth(FunctionalTestBase):
         assert_raises(toolkit.NotAuthorized, helpers.call_auth,
             'dataset_collaborator_create',
             context=context, id=dataset['id'])
+
+    def test_delete_org_admin_is_authorized(self):
+
+        context = self._get_context(self.org_admin)
+        assert helpers.call_auth('dataset_collaborator_delete',
+            context=context, id=self.dataset['id'])
+
+    def test_delete_org_editor_is_not_authorized(self):
+
+        context = self._get_context(self.org_editor)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_delete',
+            context=context, id=self.dataset['id'])
+
+    def test_delete_org_member_is_not_authorized(self):
+
+        context = self._get_context(self.org_member)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_delete',
+            context=context, id=self.dataset['id'])
+
+    def test_delete_org_admin_from_other_org_is_not_authorized(self):
+
+        context = self._get_context(self.org_admin2)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_delete',
+            context=context, id=self.dataset['id'])
+
+    def test_delete_missing_org_is_not_authorized(self):
+
+        dataset = factories.Dataset(owner_org=None)
+
+        context = self._get_context(self.org_admin)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_delete',
+            context=context, id=dataset['id'])

@@ -34,10 +34,12 @@ to create the database tables:
     def get_actions(self):
         return {
             'dataset_collaborator_create': action.dataset_collaborator_create,
+            'dataset_collaborator_delete': action.dataset_collaborator_delete,
         }
 
     # IAuthFunctions
     def get_auth_functions(self):
         return {
             'dataset_collaborator_create': auth.dataset_collaborator_create,
+            'dataset_collaborator_delete': auth.dataset_collaborator_delete,
         }

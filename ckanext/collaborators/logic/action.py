@@ -1,9 +1,13 @@
+import logging
 import datetime
 
 from ckan import model as core_model
 from ckan.plugins import toolkit
 
 from ckanext.collaborators.model import DatasetMember
+
+log = logging.getLogger(__name__)
+
 
 ALLOWED_CAPACITIES = ('editor', 'member')
 
@@ -62,18 +66,48 @@ def dataset_collaborator_create(context, data_dict):
     model.Session.add(member)
     model.repo.commit()
 
+    log.info('User {} added as collaborator in dataset {} ({})'.format(
+        user.name, dataset.id, capacity))
+
     return member.as_dict()
 
 
 def dataset_collaborator_delete(context, data_dict):
-    '''
-    (a simplified version of core's `member_delete`) :
+    '''Remove a collaborator from a dataset.
 
-    * `id` (dataset id)
+    Currently you must be an Admin on the dataset owner organization to
+    manage collaborators.
 
-    `user_id`
+    :param id: the id or name of the dataset
+    :type id: string
+    :param user_id: the id or name of the user to remove
+    :type object: string
+
     '''
-    pass
+    model = context.get('model', core_model)
+
+    dataset_id, user_id = toolkit.get_or_bust(data_dict,
+        ['id', 'user_id'])
+
+    dataset = model.Package.get(dataset_id)
+    if not dataset:
+        raise toolkit.ObjectNotFound('Dataset not found')
+
+    toolkit.check_access('dataset_collaborator_delete', context, data_dict)
+
+    member = model.Session.query(DatasetMember).\
+        filter(DatasetMember.dataset_id == dataset.id).\
+        filter(DatasetMember.user_id == user_id).one_or_none()
+    if not member:
+        raise toolkit.ObjectNotFound(
+            'User {} is not a collaborator on this dataset'.format(user_id))
+
+    model.Session.delete(member)
+    model.repo.commit()
+
+    log.info('User {} removed as collaborator from dataset {}'.format(
+        user_id, dataset.id))
+
 
 def dataset_collaborator_list(context, data_dict):
     '''(see core's `member_list`):

@@ -1,12 +1,14 @@
 from nose.tools import assert_equals, assert_raises
 
+from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import helpers, factories
 
+from ckanext.collaborators.model import DatasetMember
 from ckanext.collaborators.tests import FunctionalTestBase
 
 
-class TestCollaboratorsLogic(FunctionalTestBase):
+class TestCollaboratorsActions(FunctionalTestBase):
 
     def test_create(self):
 
@@ -22,6 +24,7 @@ class TestCollaboratorsLogic(FunctionalTestBase):
         assert_equals(member['user_id'], user['id'])
         assert_equals(member['capacity'], capacity)
 
+        assert_equals(model.Session.query(DatasetMember).count(), 1)
 
     def test_create_wrong_capacity(self):
         dataset = factories.Dataset()
@@ -50,3 +53,36 @@ class TestCollaboratorsLogic(FunctionalTestBase):
             'dataset_collaborator_create',
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
+    def test_delete(self):
+
+        dataset = factories.Dataset()
+        user = factories.User()
+        capacity = 'editor'
+
+        member = helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+        assert_equals(model.Session.query(DatasetMember).count(), 1)
+
+        helpers.call_action(
+            'dataset_collaborator_delete',
+            id=dataset['id'], user_id=user['id'])
+
+        assert_equals(model.Session.query(DatasetMember).count(), 0)
+
+    def test_delete_dataset_not_found(self):
+        dataset = {'id': 'xxx'}
+        user = factories.User()
+
+        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+            'dataset_collaborator_delete',
+            id=dataset['id'], user_id=user['id'])
+
+    def test_delete_dataset_not_found(self):
+        dataset = factories.Dataset()
+        user = {'id': 'yyy'}
+
+        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+            'dataset_collaborator_delete',
+            id=dataset['id'], user_id=user['id'])
