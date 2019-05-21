@@ -35,6 +35,7 @@ to create the database tables:
         return {
             'dataset_collaborator_create': action.dataset_collaborator_create,
             'dataset_collaborator_delete': action.dataset_collaborator_delete,
+            'dataset_collaborator_list': action.dataset_collaborator_list,
         }
 
     # IAuthFunctions
@@ -42,4 +43,5 @@ to create the database tables:
         return {
             'dataset_collaborator_create': auth.dataset_collaborator_create,
             'dataset_collaborator_delete': auth.dataset_collaborator_delete,
+            'dataset_collaborator_list': auth.dataset_collaborator_list,
         }

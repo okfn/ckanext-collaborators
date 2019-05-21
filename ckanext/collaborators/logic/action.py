@@ -110,9 +110,46 @@ def dataset_collaborator_delete(context, data_dict):
 
 
 def dataset_collaborator_list(context, data_dict):
-    '''(see core's `member_list`):
+    '''Return the list of all collaborators for a given dataset.
 
-    `id` (dataset id)
+    Currently you must be an Admin on the dataset owner organization to
+    manage collaborators.
+
+    :param id: the id or name of the dataset
+    :type id: string
+    :param capacity: (optional) If provided, only users with this capacity are
+        returned
+    :type id: string
+
+    :returns: a list of collaborators, each a dict including the dataset and
+        user id, the capacity and the last modified date
+    :rtype: list of dictionaries
+
     '''
-    pass
+
+    model = context.get('model', core_model)
+
+    dataset_id = toolkit.get_or_bust(data_dict,'id')
+
+    dataset = model.Package.get(dataset_id)
+    if not dataset:
+        raise toolkit.ObjectNotFound('Dataset not found')
+
+    toolkit.check_access('dataset_collaborator_list', context, data_dict)
+
+    capacity = data_dict.get('capacity')
+    if capacity and capacity not in ALLOWED_CAPACITIES:
+        raise toolkit.ValidationError(
+            'Capacity must be one of "{}"'.format(', '.join(
+                ALLOWED_CAPACITIES)))
+    q = model.Session.query(DatasetMember).\
+        filter(DatasetMember.dataset_id == dataset.id)
+
+    if capacity:
+        q = q.filter(DatasetMember.capacity == capacity)
+
+    members = q.all()
+
+    return [member.as_dict() for member in members]
+
 
