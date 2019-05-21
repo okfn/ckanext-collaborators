@@ -26,6 +26,25 @@ class TestCollaboratorsActions(FunctionalTestBase):
 
         assert_equals(model.Session.query(DatasetMember).count(), 1)
 
+    def test_update(self):
+
+        dataset = factories.Dataset()
+        user = factories.User()
+        capacity = 'editor'
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_equals(model.Session.query(DatasetMember).count(), 1)
+
+        assert_equals(model.Session.query(DatasetMember).one().capacity,
+            'member')
+
     def test_create_wrong_capacity(self):
         dataset = factories.Dataset()
         user = factories.User()
