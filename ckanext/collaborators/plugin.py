@@ -1,15 +1,18 @@
 import logging
 
-import ckan.plugins as plugins
+import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
 
 from ckanext.collaborators.model import tables_exist
+from ckanext.collaborators.logic import action, auth
 
 log = logging.getLogger(__name__)
 
 
-class CollaboratorsPlugin(plugins.SingletonPlugin):
-    plugins.implements(plugins.IConfigurer)
+class CollaboratorsPlugin(p.SingletonPlugin):
+    p.implements(p.IConfigurer)
+    p.implements(p.IActions)
+    p.implements(p.IAuthFunctions)
 
     # IConfigurer
 
@@ -26,3 +29,19 @@ to create the database tables:
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'collaborators')
+
+    # IActions
+    def get_actions(self):
+        return {
+            'dataset_collaborator_create': action.dataset_collaborator_create,
+            'dataset_collaborator_delete': action.dataset_collaborator_delete,
+            'dataset_collaborator_list': action.dataset_collaborator_list,
+        }
+
+    # IAuthFunctions
+    def get_auth_functions(self):
+        return {
+            'dataset_collaborator_create': auth.dataset_collaborator_create,
+            'dataset_collaborator_delete': auth.dataset_collaborator_delete,
+            'dataset_collaborator_list': auth.dataset_collaborator_list,
+        }
