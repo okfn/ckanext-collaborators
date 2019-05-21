@@ -37,6 +37,7 @@ cd -
 
 echo "Installing ckanext-collaborators and its requirements..."
 python setup.py develop
+paster --plugin=ckanext-collaborators collaborators init-db -c ckan/test-core.ini
 
 echo "Moving test.ini into a subdir..."
 mkdir subdir
