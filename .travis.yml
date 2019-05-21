@@ -2,6 +2,9 @@ language: python
 sudo: required
 python:
     - "2.7"
+env:
+    - CKAN_VERSION=master
+    - CKAN_VERSION=dev-v2.8
 services:
     - postgresql
     - redis-server
@@ -11,3 +14,6 @@ install:
 script: sh bin/travis-run.sh
 after_success:
     - coveralls
+cache:
+  directories:
+    - $HOME/.cache/pip
