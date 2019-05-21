@@ -29,6 +29,9 @@ echo "SOLR config..."
 # Solr is multicore for tests on ckan master, but it's easier to run tests on
 # Travis single-core. See https://github.com/ckan/ckan/issues/2972
 sed -i -e 's/solr_url.*/solr_url = http:\/\/127.0.0.1:8983\/solr/' ckan/test-core.ini
+sudo cp ckan/ckan/config/solr/schema.xml /etc/solr/conf/schema.xml
+sudo service jetty restart
+
 
 echo "Initialising the database..."
 cd ckan
