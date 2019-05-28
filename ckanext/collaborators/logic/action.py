@@ -32,7 +32,6 @@ def dataset_collaborator_create(context, data_dict):
     :rtype: dictionary
 
     '''.format(', '.join(ALLOWED_CAPACITIES))
-    
     model = context.get('model', core_model)
 
     dataset_id, user_id, capacity = toolkit.get_or_bust(data_dict,
@@ -52,7 +51,6 @@ def dataset_collaborator_create(context, data_dict):
         raise toolkit.ObjectNotFound('User not found')
 
     toolkit.check_access('dataset_collaborator_create', context, data_dict)
-    
     # Check if member already exists
     member = model.Session.query(DatasetMember).\
         filter(DatasetMember.dataset_id == dataset_id).\
@@ -88,13 +86,11 @@ def dataset_collaborator_delete(context, data_dict):
 
     dataset_id, user_id = toolkit.get_or_bust(data_dict,
         ['id', 'user_id'])
-    
     dataset = model.Package.get(dataset_id)
     if not dataset:
         raise toolkit.ObjectNotFound('Dataset not found')
 
     toolkit.check_access('dataset_collaborator_delete', context, data_dict)
-    
     member = model.Session.query(DatasetMember).\
         filter(DatasetMember.dataset_id == dataset_id).\
         filter(DatasetMember.user_id == user_id).one_or_none()
@@ -126,7 +122,6 @@ def dataset_collaborator_list(context, data_dict):
     :rtype: list of dictionaries
 
     '''
-    
     model = context.get('model', core_model)
 
     dataset_id = toolkit.get_or_bust(data_dict,'id')
