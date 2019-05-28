@@ -24,7 +24,7 @@ def dataset_collaborator_create(context, data_dict):
     :param id: the id or name of the dataset
     :type id: string
     :param user_id: the id or name of the user to add or edit
-    :type object: string
+    :type user_id: string
     :param capacity: the capacity of the membership. Must be one of {}
     :type capacity: string
 
@@ -81,7 +81,7 @@ def dataset_collaborator_delete(context, data_dict):
     :param id: the id or name of the dataset
     :type id: string
     :param user_id: the id or name of the user to remove
-    :type object: string
+    :type user_id: string
 
     '''
     model = context.get('model', core_model)
@@ -119,7 +119,7 @@ def dataset_collaborator_list(context, data_dict):
     :type id: string
     :param capacity: (optional) If provided, only users with this capacity are
         returned
-    :type id: string
+    :type capacity: string
 
     :returns: a list of collaborators, each a dict including the dataset and
         user id, the capacity and the last modified date
