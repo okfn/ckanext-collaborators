@@ -42,15 +42,19 @@ def collaborator_delete(dataset_id, user_id):
 class CollaboratorEditView(MethodView):
     def post(self, dataset_id):
         context = {u'model': model, u'user': toolkit.c.user}
-        
+
         try:
             form_dict = logic.clean_dict(
                 dictization_functions.unflatten(
                     logic.tuplize_dict(logic.parse_params(toolkit.request.form))))
             
+            user = toolkit.get_action('user_show')(context, {
+                'id':form_dict['username']
+                })
+
             data_dict = {
                 'id': dataset_id,
-                'user_id': form_dict['username'],
+                'user_id': user['id'],
                 'capacity': form_dict['capacity']
             }
             
