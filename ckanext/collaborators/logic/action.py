@@ -53,8 +53,8 @@ def dataset_collaborator_create(context, data_dict):
     toolkit.check_access('dataset_collaborator_create', context, data_dict)
     # Check if member already exists
     member = model.Session.query(DatasetMember).\
-        filter(DatasetMember.dataset_id == dataset_id).\
-        filter(DatasetMember.user_id == user_id).one_or_none()
+        filter(DatasetMember.dataset_id == dataset.id).\
+        filter(DatasetMember.user_id == user.id).one_or_none()
     if not member:
         member = DatasetMember(dataset_id=dataset_id,
                               user_id=user_id)
@@ -92,7 +92,7 @@ def dataset_collaborator_delete(context, data_dict):
 
     toolkit.check_access('dataset_collaborator_delete', context, data_dict)
     member = model.Session.query(DatasetMember).\
-        filter(DatasetMember.dataset_id == dataset_id).\
+        filter(DatasetMember.dataset_id == dataset.id).\
         filter(DatasetMember.user_id == user_id).one_or_none()
     if not member:
         raise toolkit.ObjectNotFound(
@@ -138,7 +138,7 @@ def dataset_collaborator_list(context, data_dict):
             'Capacity must be one of "{}"'.format(', '.join(
                 ALLOWED_CAPACITIES)))
     q = model.Session.query(DatasetMember).\
-        filter(DatasetMember.dataset_id == dataset_id)
+        filter(DatasetMember.dataset_id == dataset.id)
 
     if capacity:
         q = q.filter(DatasetMember.capacity == capacity)
