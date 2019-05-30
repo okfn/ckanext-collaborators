@@ -1,24 +1,134 @@
 from flask import Blueprint
-from ckanext.collaborators.views.package import (collaborators,
-collaborator_delete, CollaboratorEditView
-)
+from flask.views import MethodView
+
+from ckan.common import _, g
+
+import ckan.plugins.toolkit as toolkit
+import ckan.model as model
+import ckan.lib.navl.dictization_functions as dictization_functions
+import ckan.logic as logic
 
 
-collaborators_blueprint = Blueprint('collaborators', __name__)
+def collaborators_read(dataset_id):
+    context = {u'model': model, u'user': toolkit.c.user}
+    data_dict = {'id': dataset_id}
+    
+    # needed to ckan_extend package/edit_base.html
+    try:    
+        g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
+    except toolkit.NotAuthorized: 
+        message = 'Unauthorized to read dataset {0}'.format(dataset_id)
+        return toolkit.abort(401, toolkit._(message))
+    except toolkit.ObjectNotFound:
+        return toolkit.abort(404, toolkit._(u'Resource not found'))
+    
+    return toolkit.render('collaborator/collaborators.html')
 
-collaborators_blueprint.add_url_rule(
+def collaborator_delete(dataset_id, user_id):
+    context = {u'model': model, u'user': toolkit.c.user}
+
+    try:
+        toolkit.get_action('dataset_collaborator_delete')(context, {
+            'id': dataset_id,
+            'user_id': user_id
+        })
+    except toolkit.NotAuthorized: 
+        message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+        return toolkit.abort(401, toolkit._(message))
+    except toolkit.ObjectNotFound:
+        return toolkit.abort(404, toolkit._(u'Resource not found'))
+
+    return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
+
+class CollaboratorEditView(MethodView):
+    def post(self, dataset_id):
+        context = {u'model': model, u'user': toolkit.c.user}
+
+        try:
+            form_dict = logic.clean_dict(
+                dictization_functions.unflatten(
+                    logic.tuplize_dict(
+                        logic.parse_params(toolkit.request.form))))
+            
+            user = toolkit.get_action('user_show')(context, {
+                'id':form_dict['username']
+                })
+            
+            data_dict = {
+                'id': dataset_id,
+                'user_id': user['id'],
+                'capacity': form_dict['capacity']
+            }
+            
+            toolkit.get_action('dataset_collaborator_create')(
+                context, data_dict)
+
+        except dictization_functions.DataError:
+            return toolkit.abort(400, _(u'Integrity Error'))
+        except toolkit.NotAuthorized: 
+            message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+            return toolkit.abort(401, toolkit._(message))
+        except toolkit.ObjectNotFound:
+            return toolkit.abort(404, toolkit._(u'Resource not found'))
+        except toolkit.ValidationError as e:
+            import ipdb; ipdb.set_trace()
+            print(e.error_summary)
+            return toolkit.abort(404, toolkit._(u'Resource not found'))
+
+        return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
+
+    def get(self, dataset_id):
+        context = {u'model': model, u'user': toolkit.c.user}
+        data_dict = {'id': dataset_id}
+
+        try:    
+            # needed to ckan_extend package/edit_base.html
+            g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
+        except toolkit.NotAuthorized: 
+            message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+            return toolkit.abort(401, toolkit._(message))
+        except toolkit.ObjectNotFound as e:
+            return toolkit.abort(404, toolkit._(u'Resource not found'))
+        
+        user = toolkit.request.params.get(u'user_id')
+        user_capacity = 'member'
+        
+        if user:
+            collaborators = toolkit.get_action('dataset_collaborator_list')(
+                context, data_dict)
+            for c in collaborators:
+                if c['user_id'] == user:
+                    user_capacity = c['capacity']
+            user = toolkit.get_action('user_show')(context, {'id': user})
+            # Needed to reuse template
+            g.user_dict = user
+        
+        extra_vars = {
+            'capacities': [
+                {'name':'Editor', 'value': 'editor'},
+                {'name':'Member', 'value':'member'}
+                ],
+            'user_capacity': user_capacity,
+        }
+        
+        return toolkit.render('collaborator/collaborator_new.html', extra_vars)
+
+
+collaborators = Blueprint('collaborators', __name__)
+
+collaborators.add_url_rule(
     rule=u'/datasets/collaborators/<dataset_id>',
     endpoint='read',
-    view_func=collaborators, methods=['GET',]
+    view_func=collaborators_read, methods=['GET',]
     )
 
-collaborators_blueprint.add_url_rule(
+collaborators.add_url_rule(
     rule=u'/datasets/collaborators/<dataset_id>/new',
     view_func=CollaboratorEditView.as_view('new'), 
     methods=['GET', 'POST',]
     )
 
-collaborators_blueprint.add_url_rule(
+collaborators.add_url_rule(
     rule=u'/datasets/collaborators/<dataset_id>/delete/<user_id>',
     endpoint='delete',
     view_func=collaborator_delete, methods=['POST',]
