@@ -15,9 +15,11 @@ def collaborators(dataset_id):
     # needed to ckan_extend package/edit_base.html
     try:    
         g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
-    except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
-        message = 'Not found dataset "%s"'
-        return toolkit.abort(404, message % (dataset_id))
+    except toolkit.NotAuthorized: 
+        message = 'Unauthorized to read dataset {0}'.format(dataset_id)
+        return toolkit.abort(401, toolkit._(message))
+    except toolkit.ObjectNotFound:
+        return toolkit.abort(404, toolkit._(u'Resource not found'))
     
     return toolkit.render('collaborator/collaborators.html')
 
@@ -29,7 +31,10 @@ def collaborator_delete(dataset_id, user_id):
             'id': dataset_id,
             'user_id': user_id
         })
-    except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+    except toolkit.NotAuthorized: 
+        message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+        return toolkit.abort(401, toolkit._(message))
+    except toolkit.ObjectNotFound:
         return toolkit.abort(404, toolkit._(u'Resource not found'))
 
     return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
@@ -50,12 +55,16 @@ class CollaboratorEditView(MethodView):
             }
             
             toolkit.get_action('dataset_collaborator_create')(context, data_dict)
+
         except dictization_functions.DataError:
             return toolkit.abort(400, _(u'Integrity Error'))
-        except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+        except toolkit.NotAuthorized: 
+            message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+            return toolkit.abort(401, toolkit._(message))
+        except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
-        except toolkit.ValidationError:
-            return toolkit.abort(404, toolkit._(u'Invalid capacity value'))
+        except toolkit.ValidationError as e:
+            return toolkit.h.flash_error(e.error_summary)
 
         return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
 
@@ -66,9 +75,11 @@ class CollaboratorEditView(MethodView):
         # needed to ckan_extend package/edit_base.html
         try:    
             g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
-        except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
-            message = 'Not found dataset "%s"'
-            return toolkit.abort(404, message % (dataset_id))
+        except toolkit.NotAuthorized: 
+            message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+            return toolkit.abort(401, toolkit._(message))
+        except toolkit.ObjectNotFound as e:
+            return toolkit.abort(404, toolkit._(u'Resource not found'))
         
         user = toolkit.request.params.get(u'user_id')
         user_capacity = 'member'
