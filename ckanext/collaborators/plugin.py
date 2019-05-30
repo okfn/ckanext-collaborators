@@ -2,14 +2,13 @@ import logging
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
+from ckanext.collaborators import blueprint
 
 from ckanext.collaborators.helpers import get_collaborators
 from ckanext.collaborators.model import tables_exist
 from ckanext.collaborators.logic import action, auth
 
 from ckanext.collaborators.views.package import collaborators, collaborator_delete, CollaboratorEditView
-
-from flask import Blueprint
 
 log = logging.getLogger(__name__)
 
@@ -59,19 +58,5 @@ to create the database tables:
 
     # IBlueprint
     def get_blueprint(self):
-        blueprint = Blueprint(self.name, self.__module__)
-        blueprint.template_folder = u'templates'
-
-        blueprint.add_url_rule(rule=u'/datasets/collaborators/<dataset_id>',
-                                endpoint='read',
-                                view_func=collaborators, methods=['GET',])
-        
-        blueprint.add_url_rule(rule=u'/datasets/collaborators/<dataset_id>/new', 
-                                view_func=CollaboratorEditView.as_view('new'), methods=['GET', 'POST',])
-
-        blueprint.add_url_rule(rule=u'/datasets/collaborators/<dataset_id>/delete/<user_id>',
-                                endpoint='delete',
-                                view_func=collaborator_delete, methods=['POST',])
-
-        return blueprint
+        return blueprint.collaborators_blueprint
 
