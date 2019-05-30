@@ -71,9 +71,7 @@ class CollaboratorEditView(MethodView):
         except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.ValidationError as e:
-            import ipdb; ipdb.set_trace()
-            print(e.error_summary)
-            return toolkit.abort(404, toolkit._(u'Resource not found'))
+            return toolkit.h.flash_error(e.error_summary)
 
         return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
 
