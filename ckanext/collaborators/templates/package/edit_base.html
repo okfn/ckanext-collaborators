@@ -3,6 +3,6 @@
 {% block content_primary_nav %}
     {{super()}}
     {% if h.check_access('dataset_collaborator_create', {'id': pkg_dict.id}) %}
-        {{ h.build_nav_icon('collaborators.read', _('Collaborators'), dataset_id=pkg.name)}}
+        {{ h.build_nav_icon('collaborators.read', _('Collaborators'), dataset_id=pkg.name, icon='users')}}
     {% endif %}
 {% endblock %}
