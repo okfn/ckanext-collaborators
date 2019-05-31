@@ -4,12 +4,12 @@ python:
     - "2.7"
 env:
     - CKAN_VERSION=master
-    - CKAN_VERSION=dev-v2.8
+    - CKAN_VERSION=2.8
 services:
     - postgresql
     - redis-server
 install:
-    - bash bin/travis-build.bash
+    - bash bin/travis-build.sh
     - pip install coveralls
 script: sh bin/travis-run.sh
 after_success:
