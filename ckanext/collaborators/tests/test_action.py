@@ -178,3 +178,71 @@ class TestCollaboratorsActions(FunctionalTestBase):
         assert_raises(toolkit.ValidationError, helpers.call_action,
             'dataset_collaborator_list',
             id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+    def test_list_for_user(self):
+
+        dataset1 = factories.Dataset()
+        dataset2 = factories.Dataset()
+        user = factories.User()
+        capacity1 = 'editor'
+        capacity2 = 'member'
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset1['id'], user_id=user['id'], capacity=capacity1)
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset2['id'], user_id=user['id'], capacity=capacity2)
+
+        datasets = helpers.call_action(
+            'dataset_collaborator_list_for_user',
+            id=user['id'])
+
+        assert_equals(len(datasets), 2)
+
+        assert_equals(datasets[0]['dataset_id'], dataset1['id'])
+        assert_equals(datasets[0]['capacity'], capacity1)
+
+        assert_equals(datasets[1]['dataset_id'], dataset2['id'])
+        assert_equals(datasets[1]['capacity'], capacity2)
+
+    def test_list_for_user_with_capacity(self):
+
+        dataset1 = factories.Dataset()
+        dataset2 = factories.Dataset()
+        user = factories.User()
+        capacity1 = 'editor'
+        capacity2 = 'member'
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset1['id'], user_id=user['id'], capacity=capacity1)
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset2['id'], user_id=user['id'], capacity=capacity2)
+
+        datasets = helpers.call_action(
+            'dataset_collaborator_list_for_user',
+            id=user['id'], capacity='editor')
+
+
+        assert_equals(len(datasets), 1)
+
+        assert_equals(datasets[0]['dataset_id'], dataset1['id'])
+        assert_equals(datasets[0]['capacity'], capacity1)
+
+    def test_list_for_user_user_not_found(self):
+
+        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+            'dataset_collaborator_list_for_user',
+            id='xxx')
+
+    def test_list_for_user_wrong_capacity(self):
+        user = factories.User()
+        capacity = 'unknown'
+
+        assert_raises(toolkit.ValidationError, helpers.call_action,
+            'dataset_collaborator_list_for_user',
+            id=user['id'], capacity=capacity)

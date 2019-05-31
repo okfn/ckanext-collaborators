@@ -7,7 +7,16 @@ from ckan.tests import helpers, factories
 from ckanext.collaborators.tests import FunctionalTestBase
 
 
-class TestCollaboratorsAuth(FunctionalTestBase):
+class CollaboratorsAuthTestBase(object):
+
+    def _get_context(self, user):
+
+        return {'model': model,
+            'user': user if isinstance(user, basestring) else user.get('name')
+        }
+
+
+class TestCollaboratorsAuth(CollaboratorsAuthTestBase, FunctionalTestBase):
 
     def setup(self):
 
@@ -17,6 +26,7 @@ class TestCollaboratorsAuth(FunctionalTestBase):
         self.org_editor  = factories.User()
         self.org_member  = factories.User()
 
+        self.normal_user  = factories.User()
 
         self.org = factories.Organization(
             users=[
@@ -34,12 +44,6 @@ class TestCollaboratorsAuth(FunctionalTestBase):
                 {'name': self.org_admin2['name'], 'capacity': 'admin'},
             ]
         )
-
-    def _get_context(self, user):
-
-        return {'model': model,
-            'user': user if isinstance(user, basestring) else user.get('name')
-        }
 
     def test_create_org_admin_is_authorized(self):
 
@@ -137,5 +141,39 @@ class TestCollaboratorsAuth(FunctionalTestBase):
 
         context = self._get_context(self.org_admin2)
         assert_raises(toolkit.NotAuthorized, helpers.call_auth,
-            'dataset_collaborator_list',
+            'dataset_collaborator_list_for_user',
             context=context, id=self.dataset['id'])
+
+    def test_user_list_own_user_is_authorized(self):
+
+        context = self._get_context(self.normal_user)
+        assert helpers.call_auth('dataset_collaborator_list_for_user',
+            context=context, id=self.normal_user['id'])
+
+    def test_user_list_org_admin_is_not_authorized(self):
+
+        context = self._get_context(self.org_admin)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_list_for_user',
+            context=context, id=self.normal_user['id'])
+
+    def test_user_list_org_editor_is_not_authorized(self):
+
+        context = self._get_context(self.org_editor)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_list_for_user',
+            context=context, id=self.normal_user['id'])
+
+    def test_user_list_org_member_is_not_authorized(self):
+
+        context = self._get_context(self.org_member)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_list_for_user',
+            context=context, id=self.normal_user['id'])
+
+    def test_user_list_org_admin_from_other_org_is_not_authorized(self):
+
+        context = self._get_context(self.org_admin2)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'dataset_collaborator_list_for_user',
+            context=context, id=self.normal_user['id'])

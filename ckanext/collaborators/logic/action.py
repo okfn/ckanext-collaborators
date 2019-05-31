@@ -153,3 +153,49 @@ def dataset_collaborator_list(context, data_dict):
     return [member.as_dict() for member in members]
 
 
+def dataset_collaborator_list_for_user(context, data_dict):
+    '''Return a list of all dataset the user is a collaborator in
+
+    :param id: the id or name of the user
+    :type id: string
+    :param capacity: (optional) If provided, only datasets where the user has this
+        capacity are returned
+    :type id: string
+
+    :returns: a list of datasets, each a dict including the dataset id, the
+        capacity and the last modified date
+    :rtype: list of dictionaries
+
+    '''
+    model = context.get('model', core_model)
+
+    user_id = toolkit.get_or_bust(data_dict,'id')
+
+    user = model.User.get(user_id)
+    if not user:
+        raise toolkit.ObjectNotFound('User not found')
+
+    toolkit.check_access('dataset_collaborator_list_for_user', context, data_dict)
+
+    capacity = data_dict.get('capacity')
+    if capacity and capacity not in ALLOWED_CAPACITIES:
+        raise toolkit.ValidationError(
+            'Capacity must be one of "{}"'.format(', '.join(
+                ALLOWED_CAPACITIES)))
+    q = model.Session.query(DatasetMember).\
+        filter(DatasetMember.user_id == user.id)
+
+    if capacity:
+        q = q.filter(DatasetMember.capacity == capacity)
+
+    members = q.all()
+
+    out = []
+    for member in members:
+        out.append({
+            'dataset_id': member.dataset_id,
+            'capacity': member.capacity,
+            'modified': member.modified.isoformat(),
+        })
+
+    return out

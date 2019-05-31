@@ -31,17 +31,21 @@ to create the database tables:
         toolkit.add_resource('fanstatic', 'collaborators')
 
     # IActions
+
     def get_actions(self):
         return {
             'dataset_collaborator_create': action.dataset_collaborator_create,
             'dataset_collaborator_delete': action.dataset_collaborator_delete,
             'dataset_collaborator_list': action.dataset_collaborator_list,
+            'dataset_collaborator_list_for_user': action.dataset_collaborator_list_for_user,
         }
 
     # IAuthFunctions
+
     def get_auth_functions(self):
         return {
             'dataset_collaborator_create': auth.dataset_collaborator_create,
             'dataset_collaborator_delete': auth.dataset_collaborator_delete,
             'dataset_collaborator_list': auth.dataset_collaborator_list,
+            'dataset_collaborator_list_for_user': auth.dataset_collaborator_list_for_user,
         }
