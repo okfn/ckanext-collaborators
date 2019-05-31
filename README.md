@@ -1,6 +1,7 @@
 # ckanext-collaborators
 
 [![Build Status](https://travis-ci.org/okfn/ckanext-collaborators.svg?branch=master)](https://travis-ci.org/okfn/ckanext-collaborators)
+[![Coverage Status](https://coveralls.io/repos/github/okfn/ckanext-collaborators/badge.svg?branch=master)](https://coveralls.io/github/okfn/ckanext-collaborators?branch=master)
 
 This extension adds the ability to assign roles on individual datasets to individual users, alongside the standard organization-based ones.
 
