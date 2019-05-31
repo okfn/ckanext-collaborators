@@ -177,3 +177,42 @@ class TestCollaboratorsAuth(CollaboratorsAuthTestBase, FunctionalTestBase):
         assert_raises(toolkit.NotAuthorized, helpers.call_auth,
             'dataset_collaborator_list_for_user',
             context=context, id=self.normal_user['id'])
+
+
+class TestCollaboratorsShow(CollaboratorsAuthTestBase, FunctionalTestBase):
+
+    def test_show_private_dataset_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_show',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('package_show',
+            context=context, id=dataset['id'])
+
+    def test_show_private_dataset_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_show',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('package_show',
+            context=context, id=dataset['id'])

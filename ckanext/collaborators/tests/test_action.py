@@ -246,3 +246,62 @@ class TestCollaboratorsActions(FunctionalTestBase):
         assert_raises(toolkit.ValidationError, helpers.call_action,
             'dataset_collaborator_list_for_user',
             id=user['id'], capacity=capacity)
+
+
+class TestCollaboratorsSearch(FunctionalTestBase):
+
+    def test_search_results_editor(self):
+
+        org = factories.Organization()
+        dataset1 = factories.Dataset(
+            name='test1', private=True, owner_org=org['id'])
+        dataset2 = factories.Dataset(name='test2')
+
+        user = factories.User()
+        context = {'user': user['name']}
+
+        results = toolkit.get_action('package_search')(context,
+                {'q':'*:*', 'include_private':True})
+
+        assert_equals(results['count'], 1)
+        assert_equals(results['results'][0]['id'], dataset2['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset1['id'], user_id=user['id'], capacity='editor')
+
+        results = toolkit.get_action('package_search')(context,
+                {'q':'*:*', 'include_private':True, 'sort': 'name asc'})
+
+        assert_equals(results['count'], 2)
+
+        assert_equals(results['results'][0]['id'], dataset1['id'])
+        assert_equals(results['results'][1]['id'], dataset2['id'])
+
+    def test_search_results_member(self):
+
+        org = factories.Organization()
+        dataset1 = factories.Dataset(
+            name='test1', private=True, owner_org=org['id'])
+        dataset2 = factories.Dataset(name='test2')
+
+        user = factories.User()
+        context = {'user': user['name']}
+
+        results = toolkit.get_action('package_search')(context,
+                {'q':'*:*', 'include_private':True})
+
+        assert_equals(results['count'], 1)
+        assert_equals(results['results'][0]['id'], dataset2['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset1['id'], user_id=user['id'], capacity='member')
+
+        results = toolkit.get_action('package_search')(context,
+                {'q':'*:*', 'include_private':True, 'sort': 'name asc'})
+
+        assert_equals(results['count'], 2)
+
+        assert_equals(results['results'][0]['id'], dataset1['id'])
+        assert_equals(results['results'][1]['id'], dataset2['id'])

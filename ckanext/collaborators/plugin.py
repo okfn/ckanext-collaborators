@@ -1,6 +1,7 @@
 import logging
 
 import ckan.plugins as p
+from ckan.lib.plugins import DefaultPermissionLabels
 import ckan.plugins.toolkit as toolkit
 
 from ckanext.collaborators.model import tables_exist
@@ -9,10 +10,11 @@ from ckanext.collaborators.logic import action, auth
 log = logging.getLogger(__name__)
 
 
-class CollaboratorsPlugin(p.SingletonPlugin):
+class CollaboratorsPlugin(p.SingletonPlugin, DefaultPermissionLabels):
     p.implements(p.IConfigurer)
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
+    p.implements(p.IPermissionLabels)
 
     # IConfigurer
 
@@ -49,3 +51,30 @@ to create the database tables:
             'dataset_collaborator_list': auth.dataset_collaborator_list,
             'dataset_collaborator_list_for_user': auth.dataset_collaborator_list_for_user,
         }
+
+    # IPermissionLabels
+
+    def get_dataset_labels(self, dataset_obj):
+
+        labels = super(CollaboratorsPlugin, self).get_dataset_labels(dataset_obj)
+
+        # Add a generic label for all this dataset collaborators
+        labels.append(u'collaborator-{}'.format(dataset_obj.id))
+
+        return labels
+
+    def get_user_dataset_labels(self, user_obj):
+
+        labels = super(CollaboratorsPlugin, self).get_user_dataset_labels(user_obj)
+
+        if not user_obj:
+            return labels
+
+        # Add a label for each dataset this user is a collaborator of
+        datasets = toolkit.get_action('dataset_collaborator_list_for_user')(
+                {'ignore_auth': True}, {'id': user_obj.id})
+
+        for dataset in datasets:
+            labels.append('collaborator-{}'.format(dataset['dataset_id']))
+
+        return labels
