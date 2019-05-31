@@ -103,8 +103,8 @@ class CollaboratorEditView(MethodView):
         
         extra_vars = {
             'capacities': [
-                {'name':'Editor', 'value': 'editor'},
-                {'name':'Member', 'value':'member'}
+                {'name':'editor', 'value': 'editor'},
+                {'name':'member', 'value':'member'}
                 ],
             'user_capacity': user_capacity,
         }
@@ -115,19 +115,19 @@ class CollaboratorEditView(MethodView):
 collaborators = Blueprint('collaborators', __name__)
 
 collaborators.add_url_rule(
-    rule=u'/datasets/collaborators/<dataset_id>',
+    rule=u'/dataset/collaborators/<dataset_id>',
     endpoint='read',
     view_func=collaborators_read, methods=['GET',]
     )
 
 collaborators.add_url_rule(
-    rule=u'/datasets/collaborators/<dataset_id>/new',
+    rule=u'/dataset/collaborators/<dataset_id>/new',
     view_func=CollaboratorEditView.as_view('new'), 
     methods=['GET', 'POST',]
     )
 
 collaborators.add_url_rule(
-    rule=u'/datasets/collaborators/<dataset_id>/delete/<user_id>',
+    rule=u'/dataset/collaborators/<dataset_id>/delete/<user_id>',
     endpoint='delete',
     view_func=collaborator_delete, methods=['POST',]
     )
