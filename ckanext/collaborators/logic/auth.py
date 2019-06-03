@@ -1,6 +1,8 @@
 from ckan.plugins import toolkit
-from ckan.authz import has_user_permission_for_group_or_org
 
+from ckan.logic.auth import get_package_object
+from ckan.authz import has_user_permission_for_group_or_org
+from ckan.logic.auth.update import package_update as core_package_update
 
 
 def _auth_collaborator(context, data_dict, message):
@@ -61,3 +63,21 @@ def dataset_collaborator_list_for_user(context, data_dict):
     if user_obj and data_dict.get('id') in (user_obj.name, user_obj.id):
         return {'success': True}
     return {'success': False}
+
+
+# Core overrides
+# TODO: remove the direct core import and use the chained_auth_function
+# decorator once #4248 et al are backported into 2.8
+def package_update(context, data_dict):
+
+    result = core_package_update(context, data_dict)
+
+    if not result['success']:
+        user_name = context['user']
+        dataset = get_package_object(context, data_dict)
+
+        datasets = toolkit.get_action(
+            'dataset_collaborator_list_for_user')(
+                context, {'id': user_name, 'capacity': 'editor'})
+        return {
+            'success': dataset.id in [d['dataset_id'] for d in datasets]}

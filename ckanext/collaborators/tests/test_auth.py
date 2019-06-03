@@ -1,7 +1,9 @@
 from nose.tools import assert_equals, assert_raises
 
 from ckan import model
-from ckan.plugins import toolkit
+from ckan.plugins import (
+    toolkit, plugin_loaded,
+    load as load_plugin, unload as unload_plugin)
 from ckan.tests import helpers, factories
 
 from ckanext.collaborators.tests import FunctionalTestBase
@@ -181,7 +183,9 @@ class TestCollaboratorsAuth(CollaboratorsAuthTestBase, FunctionalTestBase):
 
 class TestCollaboratorsShow(CollaboratorsAuthTestBase, FunctionalTestBase):
 
-    def test_show_private_dataset_editor(self):
+    _load_plugins = ['image_view']
+
+    def test_dataset_show_private_editor(self):
 
         org = factories.Organization()
         dataset = factories.Dataset(private=True, owner_org=org['id'])
@@ -199,7 +203,7 @@ class TestCollaboratorsShow(CollaboratorsAuthTestBase, FunctionalTestBase):
         assert helpers.call_auth('package_show',
             context=context, id=dataset['id'])
 
-    def test_show_private_dataset_member(self):
+    def test_dataset_show_private_member(self):
 
         org = factories.Organization()
         dataset = factories.Dataset(private=True, owner_org=org['id'])
@@ -216,3 +220,655 @@ class TestCollaboratorsShow(CollaboratorsAuthTestBase, FunctionalTestBase):
 
         assert helpers.call_auth('package_show',
             context=context, id=dataset['id'])
+
+    def test_resource_show_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_show',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_show',
+            context=context, id=resource['id'])
+
+    def test_resource_show_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_show',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('resource_show',
+            context=context, id=resource['id'])
+
+    def test_resource_view_list_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_list',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_view_list',
+            context=context, id=resource['id'])
+
+    def test_resource_view_list_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_list',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('resource_view_list',
+            context=context, id=resource['id'])
+
+    def test_resource_view_show_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        resource_view = factories.ResourceView(resource_id=resource['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        # Needed until ckan/ckan#4828 is backported
+        context['resource'] = model.Resource.get(resource['id'])
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_show',
+            context=context, id=resource_view['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_view_show',
+            context=context, id=resource_view['id'])
+
+    def test_resource_view_show_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        resource_view = factories.ResourceView(resource_id=resource['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        # Needed until ckan/ckan#4828 is backported
+        context['resource'] = model.Resource.get(resource['id'])
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_show',
+            context=context, id=resource_view['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('resource_view_show',
+            context=context, id=resource_view['id'])
+
+    def test_resource_view_show_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_list',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_show',
+            context=context, id=resource['id'])
+
+
+class TestCollaboratorsUpdate(CollaboratorsAuthTestBase, FunctionalTestBase):
+
+    _load_plugins = ['image_view']
+
+    def test_dataset_update_public_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_update',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('package_update',
+            context=context, id=dataset['id'])
+
+    def test_dataset_update_public_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_update',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_update',
+            context=context, id=dataset['id'])
+
+
+    def test_dataset_update_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_update',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('package_update',
+            context=context, id=dataset['id'])
+
+    def test_dataset_update_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_update',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_update',
+            context=context, id=dataset['id'])
+
+    def test_dataset_delete_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_delete',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('package_delete',
+            context=context, id=dataset['id'])
+
+    def test_dataset_delete_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_delete',
+            context=context, id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'package_delete',
+            context=context, id=dataset['id'])
+
+    def test_resource_create_public_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_create',
+            context=context, package_id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_create',
+            context=context, package_id=dataset['id'])
+
+    def test_resource_create_public_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_create',
+            context=context, package_id=dataset['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_create',
+            context=context, package_id=dataset['id'])
+
+    def test_resource_update_public_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_update',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_update',
+            context=context, id=resource['id'])
+
+    def test_resource_update_public_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_update',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_update',
+            context=context, id=resource['id'])
+
+    def test_resource_delete_public_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_delete',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_delete',
+            context=context, id=resource['id'])
+
+    def test_resource_delete_public_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_delete',
+            context=context, id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_delete',
+            context=context, id=resource['id'])
+
+    def test_resource_view_create_public_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_create',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('resource_view_create',
+            context=context, resource_id=resource['id'])
+
+    def test_resource_view_create_public_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_create',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'resource_view_create',
+            context=context, resource_id=resource['id'])
+
+
+class TestCollaboratorsDataStore(CollaboratorsAuthTestBase, FunctionalTestBase):
+
+    _load_plugins = ['datastore']
+
+    def test_datastore_search_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_search',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('datastore_search',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_search_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_search',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('datastore_search',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_info_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_info',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('datastore_info',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_info_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_info',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('datastore_info',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_search_sql_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        context['table_names'] = [resource['id']]
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_search_sql',
+            context=context, sql='SELECT * FROM "{}"'.format(resource['id']))
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('datastore_search_sql',
+            context=context, sql='SELECT * FROM "{}"'.format(resource['id']))
+
+    def test_datastore_search_sql_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        context['table_names'] = [resource['id']]
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_search_sql',
+            context=context, sql='SELECT * FROM "{}"'.format(resource['id']))
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert helpers.call_auth('datastore_search_sql',
+            context=context, sql='SELECT * FROM "{}"'.format(resource['id']))
+
+
+    def test_datastore_create_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_create',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('datastore_create',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_create_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_create',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_create',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_upsert_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_upsert',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('datastore_upsert',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_upsert_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_upsert',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_upsert',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_delete_private_editor(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_delete',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='editor')
+
+        assert helpers.call_auth('datastore_delete',
+            context=context, resource_id=resource['id'])
+
+    def test_datastore_delete_private_member(self):
+
+        org = factories.Organization()
+        dataset = factories.Dataset(private=True, owner_org=org['id'])
+        resource = factories.Resource(package_id=dataset['id'])
+        user = factories.User()
+
+        context = self._get_context(user)
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_delete',
+            context=context, resource_id=resource['id'])
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity='member')
+
+        assert_raises(toolkit.NotAuthorized, helpers.call_auth,
+            'datastore_delete',
+            context=context, resource_id=resource['id'])

@@ -50,6 +50,7 @@ to create the database tables:
             'dataset_collaborator_delete': auth.dataset_collaborator_delete,
             'dataset_collaborator_list': auth.dataset_collaborator_list,
             'dataset_collaborator_list_for_user': auth.dataset_collaborator_list_for_user,
+            'package_update': auth.package_update,
         }
 
     # IPermissionLabels
