@@ -72,12 +72,14 @@ def package_update(context, data_dict):
 
     result = core_package_update(context, data_dict)
 
-    if not result['success']:
-        user_name = context['user']
-        dataset = get_package_object(context, data_dict)
+    if result['success']:
+        return result
 
-        datasets = toolkit.get_action(
-            'dataset_collaborator_list_for_user')(
-                context, {'id': user_name, 'capacity': 'editor'})
-        return {
-            'success': dataset.id in [d['dataset_id'] for d in datasets]}
+    user_name = context['user']
+    dataset = get_package_object(context, data_dict)
+
+    datasets = toolkit.get_action(
+        'dataset_collaborator_list_for_user')(
+            context, {'id': user_name, 'capacity': 'editor'})
+    return {
+        'success': dataset.id in [d['dataset_id'] for d in datasets]}
