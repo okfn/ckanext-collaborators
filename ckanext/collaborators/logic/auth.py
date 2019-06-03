@@ -55,7 +55,7 @@ def dataset_collaborator_list(context, data_dict):
 
 
 def dataset_collaborator_list_for_user(context, data_dict):
-    '''Checks if a user is allowed to list all datasets a user is acollaborator in
+    '''Checks if a user is allowed to list all datasets a user is a collaborator in
 
     The current implementation restricts to the own users themselves.
     '''
