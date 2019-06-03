@@ -160,7 +160,7 @@ def dataset_collaborator_list_for_user(context, data_dict):
     :type id: string
     :param capacity: (optional) If provided, only datasets where the user has this
         capacity are returned
-    :type id: string
+    :type capacity: string
 
     :returns: a list of datasets, each a dict including the dataset id, the
         capacity and the last modified date
