@@ -4,6 +4,8 @@ import ckan.plugins as p
 from ckan.lib.plugins import DefaultPermissionLabels
 import ckan.plugins.toolkit as toolkit
 
+from ckanext.collaborators import blueprint
+from ckanext.collaborators.helpers import get_collaborators
 from ckanext.collaborators.model import tables_exist
 from ckanext.collaborators.logic import action, auth
 
@@ -15,14 +17,16 @@ class CollaboratorsPlugin(p.SingletonPlugin, DefaultPermissionLabels):
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
     p.implements(p.IPermissionLabels)
+    p.implements(p.IBlueprint)
+    p.implements(p.ITemplateHelpers)
 
     # IConfigurer
 
     def update_config(self, config_):
         if not tables_exist():
             log.critical(u'''
-The dataset collaborators extension requires a database setup. Please run the following
-to create the database tables:
+The dataset collaborators extension requires a database setup. Please run the
+following to create the database tables:
     paster --plugin=ckanext-collaborators collaborators init-db
 ''')
         else:
@@ -79,3 +83,11 @@ to create the database tables:
             labels.append('collaborator-{}'.format(dataset['dataset_id']))
 
         return labels
+
+    # ITemplateHelpers
+    def get_helpers(self):
+        return {'collaborators_get_collaborators': get_collaborators}
+
+    # IBlueprint
+    def get_blueprint(self):
+        return blueprint.collaborators
