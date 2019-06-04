@@ -12,16 +12,16 @@ import ckan.logic as logic
 def collaborators_read(dataset_id):
     context = {u'model': model, u'user': toolkit.c.user}
     data_dict = {'id': dataset_id}
-      
+
     # needed to ckan_extend package/edit_base.html
-    try:    
+    try:
         g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
-    except toolkit.NotAuthorized: 
+    except toolkit.NotAuthorized:
         message = 'Unauthorized to read dataset {0}'.format(dataset_id)
         return toolkit.abort(401, toolkit._(message))
     except toolkit.ObjectNotFound:
         return toolkit.abort(404, toolkit._(u'Resource not found'))
-    
+
     return toolkit.render('collaborator/collaborators.html')
 
 def collaborator_delete(dataset_id, user_id):
@@ -32,7 +32,7 @@ def collaborator_delete(dataset_id, user_id):
             'id': dataset_id,
             'user_id': user_id
         })
-    except toolkit.NotAuthorized: 
+    except toolkit.NotAuthorized:
         message = u'Unauthorized to read dataset {0}'.format(dataset_id)
         return toolkit.abort(401, toolkit._(message))
     except toolkit.ObjectNotFound:
@@ -49,31 +49,29 @@ class CollaboratorEditView(MethodView):
                 dictization_functions.unflatten(
                     logic.tuplize_dict(
                         logic.parse_params(toolkit.request.form))))
-            
+
             user = toolkit.get_action('user_show')(context, {
                 'id':form_dict['username']
                 })
-            
+
             data_dict = {
                 'id': dataset_id,
                 'user_id': user['id'],
                 'capacity': form_dict['capacity']
             }
-            
+
             toolkit.get_action('dataset_collaborator_create')(
                 context, data_dict)
 
         except dictization_functions.DataError:
             return toolkit.abort(400, _(u'Integrity Error'))
-        except toolkit.NotAuthorized: 
+        except toolkit.NotAuthorized:
             message = u'Unauthorized to read dataset {0}'.format(dataset_id)
             return toolkit.abort(401, toolkit._(message))
         except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.ValidationError as e:
             toolkit.h.flash_error(e.error_summary)
-            return toolkit.redirect_to(u'collaborators.read',
-                                        dataset_id=dataset_id)
 
         return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
 
@@ -81,18 +79,18 @@ class CollaboratorEditView(MethodView):
         context = {u'model': model, u'user': toolkit.c.user}
         data_dict = {'id': dataset_id}
 
-        try:    
+        try:
             # needed to ckan_extend package/edit_base.html
             g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
-        except toolkit.NotAuthorized: 
+        except toolkit.NotAuthorized:
             message = u'Unauthorized to read dataset {0}'.format(dataset_id)
             return toolkit.abort(401, toolkit._(message))
         except toolkit.ObjectNotFound as e:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
-        
+
         user = toolkit.request.params.get(u'user_id')
         user_capacity = 'member'
-        
+
         if user:
             collaborators = toolkit.get_action('dataset_collaborator_list')(
                 context, data_dict)
@@ -102,7 +100,7 @@ class CollaboratorEditView(MethodView):
             user = toolkit.get_action('user_show')(context, {'id': user})
             # Needed to reuse template
             g.user_dict = user
-        
+
         extra_vars = {
             'capacities': [
                 {'name':'editor', 'value': 'editor'},
@@ -110,7 +108,7 @@ class CollaboratorEditView(MethodView):
                 ],
             'user_capacity': user_capacity,
         }
-        
+
         return toolkit.render('collaborator/collaborator_new.html', extra_vars)
 
 
@@ -124,7 +122,7 @@ collaborators.add_url_rule(
 
 collaborators.add_url_rule(
     rule=u'/dataset/collaborators/<dataset_id>/new',
-    view_func=CollaboratorEditView.as_view('new'), 
+    view_func=CollaboratorEditView.as_view('new'),
     methods=['GET', 'POST',]
     )
 
