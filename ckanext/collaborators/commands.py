@@ -43,7 +43,7 @@ class DatasetCollaborators(CkanCommand):
 
         if tables_exist():
             print(u'Dataset collaborators tables already exist')
-            sys.exit(1)
+            sys.exit(0)
 
         create_tables()
 
