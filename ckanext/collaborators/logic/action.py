@@ -56,8 +56,8 @@ def dataset_collaborator_create(context, data_dict):
         filter(DatasetMember.dataset_id == dataset.id).\
         filter(DatasetMember.user_id == user.id).one_or_none()
     if not member:
-        member = DatasetMember(dataset_id=dataset_id,
-                              user_id=user_id)
+        member = DatasetMember(dataset_id=dataset.id,
+                              user_id=user.id)
     member.capacity = capacity
     member.modified = datetime.datetime.utcnow()
 
