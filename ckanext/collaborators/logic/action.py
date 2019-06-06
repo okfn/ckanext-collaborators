@@ -105,11 +105,11 @@ def dataset_collaborator_delete(context, data_dict):
     model.Session.delete(member)
     model.repo.commit()
 
-    mail_notification_to_collaborator(dataset_id, user_id, member.capacity,
-                                        event='delete')
-
     log.info('User {} removed as collaborator from dataset {}'.format(
         user_id, dataset.id))
+
+    mail_notification_to_collaborator(dataset_id, user_id, member.capacity,
+                                        event='delete')
 
 
 def dataset_collaborator_list(context, data_dict):
