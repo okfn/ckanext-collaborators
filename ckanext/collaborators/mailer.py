@@ -11,7 +11,7 @@ def _compose_email_subj(dataset):
         toolkit.config.get('ckan.site_title'), dataset.title)
 
 def _compose_email_body(user, dataset, role, event):
-    dataset_link = toolkit.url_for('dataset_read', id=dataset.id)
+    dataset_link = toolkit.url_for('dataset_read', id=dataset.id, qualified=True)
     return render_jinja2('emails/{0}_collaborator.txt'.format(event), {
         'user_name': user.fullname or user.name,
         'role': role,
