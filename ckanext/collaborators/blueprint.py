@@ -35,8 +35,10 @@ def collaborator_delete(dataset_id, user_id):
     except toolkit.NotAuthorized:
         message = u'Unauthorized to read dataset {0}'.format(dataset_id)
         return toolkit.abort(401, toolkit._(message))
-    except toolkit.ObjectNotFound:
-        return toolkit.abort(404, toolkit._(u'Resource not found'))
+    except toolkit.ObjectNotFound as e:
+        return toolkit.abort(404, toolkit._(e.message))
+
+    toolkit.h.flash_success(toolkit._('User removed from collaborators'))
 
     return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
 
@@ -72,6 +74,8 @@ class CollaboratorEditView(MethodView):
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.ValidationError as e:
             toolkit.h.flash_error(e.error_summary)
+        else:
+            toolkit.h.flash_success(toolkit._('User added to collaborators'))
 
         return toolkit.redirect_to(u'collaborators.read', dataset_id=dataset_id)
 
