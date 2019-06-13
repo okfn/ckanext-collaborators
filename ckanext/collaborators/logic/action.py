@@ -5,6 +5,7 @@ from ckan import model as core_model
 from ckan.plugins import toolkit
 
 from ckanext.collaborators.model import DatasetMember
+from ckanext.collaborators.mailer import mail_notification_to_collaborator
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +67,10 @@ def dataset_collaborator_create(context, data_dict):
 
     log.info('User {} added as collaborator in dataset {} ({})'.format(
         user.name, dataset.id, capacity))
-
+    
+    mail_notification_to_collaborator(dataset_id, user_id, capacity,
+                                        event='create')
+    
     return member.as_dict()
 
 
@@ -103,6 +107,9 @@ def dataset_collaborator_delete(context, data_dict):
 
     log.info('User {} removed as collaborator from dataset {}'.format(
         user_id, dataset.id))
+
+    mail_notification_to_collaborator(dataset_id, user_id, member.capacity,
+                                        event='delete')
 
 
 def dataset_collaborator_list(context, data_dict):

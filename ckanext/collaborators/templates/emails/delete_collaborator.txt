@@ -1,0 +1,11 @@
+Dear {{ user_name }},
+
+Your permission as a {{role}} on the dataset "{{ dataset_title }}" has been removed.
+
+Please contact the site administrators for further information.
+
+Have a nice day.
+
+--
+Message sent by {{ site_title }} ({{ site_url }})
+This is an automated message, please don't respond to this address.

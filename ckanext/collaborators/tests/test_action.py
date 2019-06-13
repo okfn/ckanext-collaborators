@@ -1,3 +1,5 @@
+import mock
+
 from nose.tools import assert_equals, assert_raises
 
 from ckan import model
@@ -305,3 +307,31 @@ class TestCollaboratorsSearch(FunctionalTestBase):
 
         assert_equals(results['results'][0]['id'], dataset1['id'])
         assert_equals(results['results'][1]['id'], dataset2['id'])
+
+    @mock.patch('ckanext.collaborators.mailer.mail_user')
+    def test_create_collaborator_emails_notification(self, mock_mail_user):
+        dataset = factories.Dataset()
+        user = factories.User()
+        capacity = 'editor'
+
+        member = helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+        assert_equals(mock_mail_user.call_count, 1)
+
+    @mock.patch('ckanext.collaborators.mailer.mail_user')
+    def test_delete_collaborators_emails_notification(self, mock_mail_user):
+        dataset = factories.Dataset()
+        user = factories.User()
+        capacity = 'editor'
+
+        member = helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+        helpers.call_action(
+            'dataset_collaborator_delete',
+            id=dataset['id'], user_id=user['id'])
+
+        assert_equals(mock_mail_user.call_count, 2)

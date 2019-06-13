@@ -1,0 +1,13 @@
+Dear {{ user_name }},
+
+You have been added as collaborator with role {{ role }} to the dataset "{{ dataset_title }}".
+
+You can navigate to the dataset on the following page after logging in to the site:
+
+{{ dataset_link }}
+
+Have a nice day.
+
+--
+Message sent by {{ site_title }} ({{ site_url }})
+This is an automated message, please don't respond to this address.
