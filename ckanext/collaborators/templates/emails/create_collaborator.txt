@@ -1,13 +1,13 @@
-Dear {{ user_name }},
+Dear {{ user_name }}, <br/><br/>
 
-You have been added as collaborator with role {{ role }} to the dataset "{{ dataset_title }}".
+You have been added as collaborator with role {{ role }} to the dataset "{{ dataset_title }}". <br/><br/>
 
-You can navigate to the dataset on the following page after logging in to the site:
+You can navigate to the dataset on the following page after logging in to the site: <br/><br/>
 
-{{ dataset_link }}
+<a href="{{ dataset_link }}">{{ dataset_link }}</a><br/><br/>
 
-Have a nice day.
+Have a nice day. <br/><br/>
 
---
-Message sent by {{ site_title }} ({{ site_url }})
-This is an automated message, please don't respond to this address.
+--<br/>
+Message sent by {{ site_title }} (<a href="{{ site_url }}">{{ site_url }}</a>)<br/>
+This is an automated message, please don't respond to this address.<br/>

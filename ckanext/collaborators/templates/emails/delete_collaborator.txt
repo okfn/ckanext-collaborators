@@ -1,11 +1,12 @@
-Dear {{ user_name }},
+Dear {{ user_name }}, <br/><br/>
 
-Your permission as a {{role}} on the dataset "{{ dataset_title }}" has been removed.
+Your permission as a {{role}} on the dataset "{{ dataset_title }}" has been removed. <br/><br/>
 
-Please contact the site administrators for further information.
+Please contact the site administrators for further information. <br/><br/>
 
-Have a nice day.
+Have a nice day. <br/><br/>
 
---
-Message sent by {{ site_title }} ({{ site_url }})
+--<br/>
+Message sent by {{ site_title }} (<a href="{{ site_url }}">{{ site_url }}</a>)<br/>
 This is an automated message, please don't respond to this address.
+
