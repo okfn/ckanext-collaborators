@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <p> Dear {{ user_name }}, </p>
+
+    <p> You have been added as collaborator with role {{ role }} to the dataset "{{ dataset_title }}". </p>
+
+    <p> You can navigate to the dataset on the following page after logging in to the site: </p>
+
+    <p> <a href="{{ dataset_link }}">{{ dataset_link }}</a></p>
+
+    <p> Have a nice day. </p>
+
+    <p> 
+        --<br/>
+        Message sent by {{ site_title }} (<a href="{{ site_url }}">{{ site_url }}</a>)<br/>
+        This is an automated message, please don't respond to this address.<br/>
+    </p>
+</body>
+</html> 
