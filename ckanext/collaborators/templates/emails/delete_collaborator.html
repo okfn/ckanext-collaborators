@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <p> Dear {{ user_name }}, </p>
+
+    <p> Your permission as a {{role}} on the dataset "{{ dataset_title }}" has been removed. </p>
+
+    <p> Please contact the site administrators for further information. </p>
+
+    <p> Have a nice day. </p>
+
+    <p> 
+        --<br/>
+        Message sent by {{ site_title }} (<a href="{{ site_url }}">{{ site_url }}</a>)<br/>
+        This is an automated message, please don't respond to this address.
+    </p>
+</body>
+</html> 

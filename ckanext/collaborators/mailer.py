@@ -12,7 +12,7 @@ def _compose_email_subj(dataset):
 
 def _compose_email_body(user, dataset, role, event):
     dataset_link = toolkit.url_for('dataset_read', id=dataset.id, qualified=True)
-    return render_jinja2('emails/{0}_collaborator.txt'.format(event), {
+    return render_jinja2('emails/{0}_collaborator.html'.format(event), {
         'user_name': user.fullname or user.name,
         'role': role,
         'site_title': toolkit.config.get('ckan.site_title'),
@@ -28,6 +28,8 @@ def mail_notification_to_collaborator(dataset_id, user_id, capacity, event):
     try:
         subj = _compose_email_subj(dataset)
         body = _compose_email_body(user, dataset, capacity, event)
-        mail_user(user, subj, body, headers={})
+        mail_user(user, subj, body, headers={
+            'Content-Type': 'text/html; charset=UTF-8'
+        })
     except MailerException as exception:
         log.exception(exception)
