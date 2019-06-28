@@ -5,11 +5,11 @@ from ckan.plugins import toolkit
 
 submit_and_follow = helpers.submit_and_follow
 
-class TestCollaboratorsUI(helpers.FunctionalTestBase):
+class TestCollaborators(helpers.FunctionalTestBase):
 
     def setup(self):
 
-        super(TestCollaboratorsUI, self).setup()
+        super(TestCollaborators, self).setup()
 
         self.org_admin = factories.User()
         self.org_admin_name = self.org_admin['name'].encode('ascii')
@@ -89,7 +89,7 @@ class TestCollaboratorsUI(helpers.FunctionalTestBase):
             owner_org=self.org['id'],
             private=True,
         )
-        app = helpers._get_test_app()
+        app = self._get_test_app()
 
         for capacity, user_dict in collaborators.items():
             helpers.call_action(
