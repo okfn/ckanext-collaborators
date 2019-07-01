@@ -11,6 +11,8 @@ class TestCollaborators(helpers.FunctionalTestBase):
 
         super(TestCollaborators, self).setup()
 
+        helpers.reset_db()
+
         self.org_admin = factories.User()
         self.org_admin_name = self.org_admin['name'].encode('ascii')
 
