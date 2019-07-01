@@ -58,11 +58,10 @@ class TestCollaborators(helpers.FunctionalTestBase):
             'dataset_collaborator_create',
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
-        # TODO: Replace with toolkit.url_for()
-        url = '/dataset/collaborators/{id}'.format(id=dataset['id'])
-        
+        url = toolkit.url_for('collaborators.read', dataset_id=dataset['id'])
         app = self._get_test_app()
         environ = {'REMOTE_USER': self.org_admin_name}
+
         res = app.get(url, extra_environ=environ)
 
         assert_in('Editor Collaborator', res.body)
@@ -75,15 +74,15 @@ class TestCollaborators(helpers.FunctionalTestBase):
         )
         user = factories.User(fullname='Member Collaborator')
         capacity = 'member'
+        
         helpers.call_action(
             'dataset_collaborator_create',
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
-        # TODO: Replace with toolkit.url_for()
-        url = '/dataset/collaborators/{id}'.format(id=dataset['id'])
-        
+        url = toolkit.url_for('collaborators.read', dataset_id=dataset['id'])        
         app = self._get_test_app()
         environ = {'REMOTE_USER': self.org_admin_name}
+
         res = app.get(url, extra_environ=environ)
 
         assert_in('Member Collaborator', res.body)
@@ -97,8 +96,7 @@ class TestCollaborators(helpers.FunctionalTestBase):
         new_collaborator = factories.User()
 
         app = self._get_test_app()
-        url = '/dataset/collaborators/{id}/new'.format(id=dataset['id'])
-
+        url = toolkit.url_for('collaborators.new', dataset_id=dataset['id'])
         env = {'REMOTE_USER': self.org_admin_name}
 
         res = app.get(
@@ -128,9 +126,10 @@ class TestCollaborators(helpers.FunctionalTestBase):
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
         app = self._get_test_app()
-        url = '/dataset/collaborators/{id}/delete/{collaborator}'.format(
-            id=dataset['id'], collaborator= user['id'])
-        
+        url = toolkit.url_for('collaborators.delete', 
+            dataset_id=dataset['id'], 
+            user_id=user['id']
+        )
         env = {'REMOTE_USER': self.org_admin_name}
 
         res = app.post(
@@ -153,18 +152,16 @@ class TestCollaborators(helpers.FunctionalTestBase):
             owner_org=self.org['id'],
             private=True,
         )
+        
         app = self._get_test_app()
-
+        url = toolkit.url_for('dataset_read', id=dataset['name'])
+        
         for capacity, user_dict in collaborators.items():
             helpers.call_action(
             'dataset_collaborator_create',
             id=dataset['id'], user_id=user_dict['id'], capacity=capacity)
-
             res = app.get(
-                toolkit.url_for(
-                    'dataset_read',
-                    id=dataset['name']
-                ),
+                url,
                 extra_environ={
                     'REMOTE_USER': user_dict['name'].encode('ascii'),
                 },
@@ -185,12 +182,11 @@ class TestCollaborators(helpers.FunctionalTestBase):
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
         app = self._get_test_app()
+        url = toolkit.url_for('dataset_edit',id=dataset['name'])
         env = {'REMOTE_USER': user['name'].encode('ascii')}
-        res = app.get(
-            toolkit.url_for('dataset_edit',
-                    id=dataset['name']),
-            extra_environ=env,
-        )
+        
+        res = app.get(url, extra_environ=env,)
+
         form = res.forms['dataset-edit']
         form['notes'] = u'edited description'
         submit_and_follow(app, form, env, 'save')
@@ -211,18 +207,13 @@ class TestCollaborators(helpers.FunctionalTestBase):
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
         app = self._get_test_app()
+        url = toolkit.url_for('dataset_edit', id=dataset['name'])
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         
-        res = app.get(
-            toolkit.url_for('dataset_edit',
-                    id=dataset['name']),
-            extra_environ=env,
-            status=403,
-        )
+        res = app.get(url, extra_environ=env, status=403,)
 
         res = app.post(
-            toolkit.url_for('dataset_edit',
-                    id=dataset['name']),
+            url,
             {'notes': 'edited description'},
             extra_environ=env,
             status=403,
@@ -241,15 +232,12 @@ class TestCollaborators(helpers.FunctionalTestBase):
         }
 
         app = self._get_test_app()
-        url = '/dataset/collaborators/{id}/new'.format(id=dataset['id'])
+        url = toolkit.url_for('collaborators.new', dataset_id=dataset['id'])
 
         for member_name in org_members.values():
             env = {'REMOTE_USER': member_name}
 
-            res = app.get(
-                    url,
-                    extra_environ=env,
-                    status=401, )
+            res = app.get(url, extra_environ=env, status=401, )
             res = app.post(
                     url,
                     {
@@ -272,15 +260,11 @@ class TestCollaborators(helpers.FunctionalTestBase):
         }
 
         app = self._get_test_app()
-        url = '/dataset/collaborators/{id}'.format(id=dataset['id'])
+        url = toolkit.url_for('collaborators.read', dataset_id=dataset['id'])
 
         for member_name in org_members.values():
             env = {'REMOTE_USER': member_name}
-
-            res = app.get(
-                    url,
-                    extra_environ=env,
-                    status=401, )
+            res = app.get(url, extra_environ=env, status=401, )
 
     def test_org_members_cannot_delete_collaborators(self):
         dataset = factories.Dataset(
@@ -300,8 +284,10 @@ class TestCollaborators(helpers.FunctionalTestBase):
         }
 
         app = self._get_test_app()
-        url = '/dataset/collaborators/{id}/delete/{collaborator}'.format(
-            id=dataset['id'], collaborator= new_collaborator['id'])
+        url = toolkit.url_for('collaborators.delete', 
+            dataset_id=dataset['id'], 
+            user_id=new_collaborator['id']
+        )
 
         for member_name in org_members.values():
             env = {'REMOTE_USER': member_name}
