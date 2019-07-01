@@ -14,8 +14,17 @@ class TestCollaborators(helpers.FunctionalTestBase):
         self.org_admin = factories.User()
         self.org_admin_name = self.org_admin['name'].encode('ascii')
 
+        self.org_member = factories.User()
+        self.org_member_name = self.org_member['name'].encode('ascii')
+
+        self.org_editor = factories.User()
+        self.org_editor_name = self.org_editor['name'].encode('ascii')
+
+
         self.org = factories.Organization(
             users=[
+                {'name': self.org_member['name'], 'capacity': 'member'},
+                {'name': self.org_editor['name'], 'capacity': 'editor'},
                 {'name': self.org_admin['name'], 'capacity': 'admin'},
             ]
         )
@@ -164,3 +173,116 @@ class TestCollaborators(helpers.FunctionalTestBase):
             status=403,
         )
 
+    def test_org_members_cannot_add_collaborators(self):
+        dataset = factories.Dataset(
+                private=True,
+                owner_org=self.org['id'],
+        )
+        new_collaborator = factories.User()
+
+        org_members = {
+            'member': self.org_member_name,
+            'editor': self.org_editor_name
+        }
+
+        app = self._get_test_app()
+        url = '/dataset/collaborators/{id}/new'.format(id=dataset['id'])
+
+        for member_name in org_members.values():
+            env = {'REMOTE_USER': member_name}
+
+            res = app.get(
+                    url,
+                    extra_environ=env,
+                    status=401, )
+            res = app.post(
+                    url,
+                    {
+                        'id': dataset['id'],
+                        'username': new_collaborator['name'].encode('ascii'),
+                        'capacity': 'member'
+                    },
+                    extra_environ=env,
+                    status=401, )
+
+    def test_org_members_cannot_read_collaborators(self):
+        dataset = factories.Dataset(
+                private=True,
+                owner_org=self.org['id'],
+        )
+
+        org_members = {
+            'member': self.org_member_name,
+            'editor': self.org_editor_name
+        }
+
+        app = self._get_test_app()
+        url = '/dataset/collaborators/{id}'.format(id=dataset['id'])
+
+        for member_name in org_members.values():
+            env = {'REMOTE_USER': member_name}
+
+            res = app.get(
+                    url,
+                    extra_environ=env,
+                    status=401, )
+
+    def test_org_members_cannot_delete_collaborators(self):
+        dataset = factories.Dataset(
+                private=True,
+                owner_org=self.org['id'],
+        )
+        new_collaborator = factories.User()
+        capacity = 'member'
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=new_collaborator['id'], capacity=capacity)
+
+        org_members = {
+            'member': self.org_member_name,
+            'editor': self.org_editor_name
+        }
+
+        app = self._get_test_app()
+        url = '/dataset/collaborators/{id}/delete/{collaborator}'.format(
+            id=dataset['id'], collaborator= new_collaborator['id'])
+
+        for member_name in org_members.values():
+            env = {'REMOTE_USER': member_name}
+
+            res = app.post(
+                    url,
+                    {
+                        'id': dataset['id'],
+                        'user_id': new_collaborator['id'],
+                    },
+                    extra_environ=env,
+                    status=401, )
+
+    def test_org_admins_can_delete_collaborators(self):
+        dataset = factories.Dataset(
+                private=True,
+                owner_org=self.org['id'],
+        )
+        user = factories.User()
+        capacity = 'member'
+
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+        app = self._get_test_app()
+        url = '/dataset/collaborators/{id}/delete/{collaborator}'.format(
+            id=dataset['id'], collaborator= user['id'])
+        
+        env = {'REMOTE_USER': self.org_admin_name}
+
+        res = app.post(
+                url,
+                {
+                    'id': dataset['id'],
+                    'user_id': user['id'],
+                },
+                extra_environ=env,
+                status=302, )
