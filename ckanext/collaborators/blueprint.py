@@ -13,11 +13,12 @@ def collaborators_read(dataset_id):
     context = {u'model': model, u'user': toolkit.c.user}
     data_dict = {'id': dataset_id}
 
-    # needed to ckan_extend package/edit_base.html
     try:
+        toolkit.check_access(u'dataset_collaborator_list', context, data_dict)
+        # needed to ckan_extend package/edit_base.html
         g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
     except toolkit.NotAuthorized:
-        message = 'Unauthorized to read dataset {0}'.format(dataset_id)
+        message = 'Unauthorized to read collaborators {0}'.format(dataset_id)
         return toolkit.abort(401, toolkit._(message))
     except toolkit.ObjectNotFound:
         return toolkit.abort(404, toolkit._(u'Resource not found'))
@@ -33,7 +34,7 @@ def collaborator_delete(dataset_id, user_id):
             'user_id': user_id
         })
     except toolkit.NotAuthorized:
-        message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+        message = u'Unauthorized to delete collaborators {0}'.format(dataset_id)
         return toolkit.abort(401, toolkit._(message))
     except toolkit.ObjectNotFound as e:
         return toolkit.abort(404, toolkit._(e.message))
@@ -68,7 +69,7 @@ class CollaboratorEditView(MethodView):
         except dictization_functions.DataError:
             return toolkit.abort(400, _(u'Integrity Error'))
         except toolkit.NotAuthorized:
-            message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+            message = u'Unauthorized to edit collaborators {0}'.format(dataset_id)
             return toolkit.abort(401, toolkit._(message))
         except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
@@ -84,10 +85,11 @@ class CollaboratorEditView(MethodView):
         data_dict = {'id': dataset_id}
 
         try:
+            toolkit.check_access(u'dataset_collaborator_list', context, data_dict)
             # needed to ckan_extend package/edit_base.html
             g.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
         except toolkit.NotAuthorized:
-            message = u'Unauthorized to read dataset {0}'.format(dataset_id)
+            message = u'Unauthorized to read collaborators {0}'.format(dataset_id)
             return toolkit.abort(401, toolkit._(message))
         except toolkit.ObjectNotFound as e:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
