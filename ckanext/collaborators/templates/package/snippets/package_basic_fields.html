@@ -1,0 +1,13 @@
+{% ckan_extends %}
+
+  {% block package_basic_fields_license %}
+  {% if not data.owner_org or h.user_in_org_or_group(data.owner_org) %}
+    {{ super() }}
+  {% endif %}
+  {% endblock %}
+
+  {% block package_basic_fields_org %} 
+  {% if not data.owner_org or h.user_in_org_or_group(data.owner_org) %}
+    {{ super() }}
+  {% endif %}
+  {% endblock %}
