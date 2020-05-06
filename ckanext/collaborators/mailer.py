@@ -19,7 +19,7 @@ def _compose_email_body(user, dataset, role, event):
         'site_url': toolkit.config.get('ckan.site_url'),
         'dataset_title': dataset.title,
         'dataset_link': dataset_link
-})
+    })
 
 def mail_notification_to_collaborator(dataset_id, user_id, capacity, event):
     user = core_model.User.get(user_id)
