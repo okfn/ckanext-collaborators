@@ -41,7 +41,7 @@ echo "Files is:"
 cat /etc/default/jetty
 sudo cp ckan/ckan/config/solr/schema.xml /etc/solr/conf/schema.xml
 echo "Starting jetty"
-sudo service jetty8 restart
+sudo service jetty restart
 
 
 echo "Initialising the database..."
