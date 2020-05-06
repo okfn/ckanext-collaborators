@@ -237,7 +237,7 @@ class TestCollaborators(helpers.FunctionalTestBase):
         for member_name in org_members.values():
             env = {'REMOTE_USER': member_name}
 
-            res = app.get(url, extra_environ=env, status=401, )
+            res = app.get(url, extra_environ=env, status=403, )
             res = app.post(
                     url,
                     {
@@ -246,7 +246,7 @@ class TestCollaborators(helpers.FunctionalTestBase):
                         'capacity': 'member'
                     },
                     extra_environ=env,
-                    status=401, )
+                    status=403, )
 
     def test_org_members_cannot_read_collaborators(self):
         dataset = factories.Dataset(
@@ -264,7 +264,7 @@ class TestCollaborators(helpers.FunctionalTestBase):
 
         for member_name in org_members.values():
             env = {'REMOTE_USER': member_name}
-            res = app.get(url, extra_environ=env, status=401, )
+            res = app.get(url, extra_environ=env, status=403, )
 
     def test_org_members_cannot_delete_collaborators(self):
         dataset = factories.Dataset(
@@ -299,4 +299,4 @@ class TestCollaborators(helpers.FunctionalTestBase):
                         'user_id': new_collaborator['id'],
                     },
                     extra_environ=env,
-                    status=401, )
+                    status=403, )
