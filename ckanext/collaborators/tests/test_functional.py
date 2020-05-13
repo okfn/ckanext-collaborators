@@ -79,7 +79,7 @@ class TestCollaborators(helpers.FunctionalTestBase):
             'dataset_collaborator_create',
             id=dataset['id'], user_id=user['id'], capacity=capacity)
 
-        url = toolkit.url_for('collaborators.read', dataset_id=dataset['id'])        
+        url = toolkit.url_for('collaborators.read', dataset_id=dataset['id'])
         app = self._get_test_app()
         environ = {'REMOTE_USER': self.org_admin_name}
 

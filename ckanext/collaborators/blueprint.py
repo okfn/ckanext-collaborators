@@ -26,7 +26,7 @@ def collaborators_read(dataset_id):
     except toolkit.ObjectNotFound:
         return toolkit.abort(404, toolkit._(u'Resource not found'))
 
-    return toolkit.render('collaborator/collaborators.html')
+    return toolkit.render('collaborators/collaborator/collaborators.html')
 
 def collaborator_delete(dataset_id, user_id):
     if not hasattr(toolkit.c, 'user') or not toolkit.c.user:
@@ -127,7 +127,7 @@ class CollaboratorEditView(MethodView):
             'user_capacity': user_capacity,
         }
 
-        return toolkit.render('collaborator/collaborator_new.html', extra_vars)
+        return toolkit.render('collaborators/collaborator/collaborator_new.html', extra_vars)
 
 
 collaborators = Blueprint('collaborators', __name__)
