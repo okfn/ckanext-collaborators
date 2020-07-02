@@ -44,6 +44,8 @@ following to create the database tables:
             'dataset_collaborator_delete': action.dataset_collaborator_delete,
             'dataset_collaborator_list': action.dataset_collaborator_list,
             'dataset_collaborator_list_for_user': action.dataset_collaborator_list_for_user,
+            'package_delete': action.collaborators_package_delete,
+            'user_delete': action.collaborators_user_delete,
         }
 
     # IAuthFunctions

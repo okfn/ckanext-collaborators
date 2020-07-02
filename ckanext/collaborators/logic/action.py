@@ -67,10 +67,10 @@ def dataset_collaborator_create(context, data_dict):
 
     log.info('User {} added as collaborator in dataset {} ({})'.format(
         user.name, dataset.id, capacity))
-    
+
     mail_notification_to_collaborator(dataset_id, user_id, capacity,
                                         event='create')
-    
+
     return member.as_dict()
 
 
@@ -201,3 +201,37 @@ def dataset_collaborator_list_for_user(context, data_dict):
         })
 
     return out
+
+
+@toolkit.chained_action
+def collaborators_package_delete(up_func, context, data_dict):
+    '''
+    Remove collaborators record from table after calling the core action
+    '''
+    model = context.get('model', core_model)
+    up_func(context, data_dict)
+    id = data_dict['id']
+    dataset_collaborators = model.Session.query(DatasetMember).filter(
+        DatasetMember.dataset_id == id).all()
+    for collaborator in dataset_collaborators:
+        model.Session.delete(collaborator)
+
+    model.Session.commit()
+
+
+@toolkit.chained_action
+def collaborators_user_delete(up_func, context, data_dict):
+    '''
+    Remove collaborators record from table after calling the core action
+    '''
+
+    model = context.get('model', core_model)
+    up_func(context, data_dict)
+    id = data_dict['id']
+
+    datasets_where_user_is_collaborator = model.Session.query(DatasetMember).filter(
+        DatasetMember.user_id == user.id).all()
+    for collaborator in datasets_where_user_is_collaborator:
+        model.Session.delete(collaborator)
+
+    model.Session.commit()
