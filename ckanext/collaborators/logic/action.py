@@ -68,7 +68,8 @@ def dataset_collaborator_create(context, data_dict):
     log.info('User {} added as collaborator in dataset {} ({})'.format(
         user.name, dataset.id, capacity))
 
-    mail_notification_to_collaborator(dataset_id, user_id, capacity,
+    if data_dict.get('send_mail', False):
+        mail_notification_to_collaborator(dataset_id, user_id, capacity,
                                         event='create')
 
     return member.as_dict()

@@ -108,23 +108,6 @@ class TestCollaboratorsActions(FunctionalTestBase):
             'dataset_collaborator_delete',
             id=dataset['id'], user_id=user['id'])
 
-    def test_deleting_user_removes_collaborator(self):
-        dataset = factories.Dataset()
-        user = factories.User()
-        capacity = 'editor'
-
-        member = helpers.call_action(
-            'dataset_collaborator_create',
-            id=dataset['id'], user_id=user['id'], capacity=capacity)
-
-        assert_equals(model.Session.query(DatasetMember).count(), 1)
-
-        helpers.call_action(
-            'user_delete',
-            id=user['id'])
-
-        assert_equals(model.Session.query(DatasetMember).count(), 0)
-
     def test_list(self):
 
         dataset = factories.Dataset()
@@ -326,16 +309,28 @@ class TestCollaboratorsSearch(FunctionalTestBase):
         assert_equals(results['results'][1]['id'], dataset2['id'])
 
     @mock.patch('ckanext.collaborators.mailer.mail_user')
-    def test_create_collaborator_emails_notification(self, mock_mail_user):
+    def test_create_collaborator_emails_notification_if_send_email(self, mock_mail_user):
         dataset = factories.Dataset()
         user = factories.User()
         capacity = 'editor'
 
         member = helpers.call_action(
             'dataset_collaborator_create',
-            id=dataset['id'], user_id=user['id'], capacity=capacity)
+            id=dataset['id'], user_id=user['id'], capacity=capacity, send_mail=True)
 
         assert_equals(mock_mail_user.call_count, 1)
+
+    @mock.patch('ckanext.collaborators.mailer.mail_user')
+    def test_create_collaborator_emails_notification_if_not_send_email(self, mock_mail_user):
+        dataset = factories.Dataset()
+        user = factories.User()
+        capacity = 'editor'
+
+        member = helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity, send_mail=False)
+
+        assert_equals(mock_mail_user.call_count, 0)
 
     @mock.patch('ckanext.collaborators.mailer.mail_user')
     def test_delete_collaborators_emails_notification(self, mock_mail_user):
@@ -345,7 +340,7 @@ class TestCollaboratorsSearch(FunctionalTestBase):
 
         member = helpers.call_action(
             'dataset_collaborator_create',
-            id=dataset['id'], user_id=user['id'], capacity=capacity)
+            id=dataset['id'], user_id=user['id'], capacity=capacity, send_mail=True)
 
         helpers.call_action(
             'dataset_collaborator_delete',

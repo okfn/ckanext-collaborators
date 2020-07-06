@@ -69,7 +69,8 @@ class CollaboratorEditView(MethodView):
             data_dict = {
                 'id': dataset_id,
                 'user_id': user['id'],
-                'capacity': form_dict['capacity']
+                'capacity': form_dict['capacity'],
+                'send_mail': form_dict.get('send_mail', False)
             }
 
             toolkit.get_action('dataset_collaborator_create')(
