@@ -108,6 +108,23 @@ class TestCollaboratorsActions(FunctionalTestBase):
             'dataset_collaborator_delete',
             id=dataset['id'], user_id=user['id'])
 
+    def test_deleting_user_removes_collaborator(self):
+        dataset = factories.Dataset()
+        user = factories.User()
+        capacity = 'editor'
+
+        member = helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'], user_id=user['id'], capacity=capacity)
+
+        assert_equals(model.Session.query(DatasetMember).count(), 1)
+
+        helpers.call_action(
+            'user_delete',
+            id=user['id'])
+
+        assert_equals(model.Session.query(DatasetMember).count(), 0)
+
     def test_list(self):
 
         dataset = factories.Dataset()

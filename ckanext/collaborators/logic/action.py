@@ -227,10 +227,10 @@ def collaborators_user_delete(up_func, context, data_dict):
 
     model = context.get('model', core_model)
     up_func(context, data_dict)
-    id = data_dict['id']
+    user_id = data_dict['id']
 
     datasets_where_user_is_collaborator = model.Session.query(DatasetMember).filter(
-        DatasetMember.user_id == user.id).all()
+        DatasetMember.user_id == user_id).all()
     for collaborator in datasets_where_user_is_collaborator:
         model.Session.delete(collaborator)
 
