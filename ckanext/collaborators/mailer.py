@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 
 def _compose_email_subj(dataset):
-    return '{0} - Notification about collaborator role for {1}'.format(
+    return u'{0} - Notification about collaborator role for {1}'.format(
         toolkit.config.get('ckan.site_title'), dataset.title)
 
 def _compose_email_body(user, dataset, role, event):
