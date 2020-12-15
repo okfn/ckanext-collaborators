@@ -5,8 +5,7 @@ sudo: required
 python:
     - "2.7"
 env:
-    - CKAN_VERSION=master
-    - CKAN_VERSION=2.8
+    - CKANVERSION=2.8
 services:
     - postgresql
     - redis-server
