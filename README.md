@@ -5,6 +5,8 @@
 
 This extension adds the ability to assign roles on individual datasets to individual users, alongside the standard organization-based ones.
 
+**NOTE:** Starting from CKAN 2.9, this feature is built-in into CKAN core
+
 ## Installation
 
 To install ckanext-collaborators, activate your CKAN virtualenv and run:
